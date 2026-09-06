@@ -1,0 +1,9 @@
+node_modules/
+dist/
+node/
+stateinik-engine/
+statejnik/
+voice-samples/
+graphify-out/
+*.zip
+*.exe

@@ -1,0 +1,387 @@
+// Stateinik — content engine schema.
+// Two content types (Guide, Concept) on one engine, plus taxonomy, revisions,
+// stats, feedback and A/B headline testing. Self-contained: no User/commerce
+// relations. Authors are first-class (see Author). Full-text search is powered
+// by the `contentTsv` tsvector column populated by a trigger (see the
+// migrations/*_fts migration); keep the column name and the FTS language in
+// sync with src/lib/content/ts-query.ts and site.config.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// Enums
+// ===========================================
+
+enum GuideType {
+  pillar
+  tutorial
+  playbook
+  recipe
+}
+
+enum GuideDifficulty {
+  beginner
+  intermediate
+  advanced
+}
+
+enum GuideStatus {
+  draft
+  scheduled
+  published
+  archived
+}
+
+// ===========================================
+// Authors (first-class — replaces the host platform's User-as-author)
+// ===========================================
+
+model Author {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  title       String?
+  bio         String? @db.Text
+  avatar      String?
+  socialLinks Json? // [{ label, url }]
+
+  // Optional: only used when MULTI_AUTHOR=true to map a login to an author.
+  email String? @unique
+
+  joinedAt  DateTime  @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  guides         Guide[]   @relation("GuidesByAuthor")
+  reviewedGuides Guide[]   @relation("GuidesByReviewer")
+  concepts       Concept[] @relation("ConceptsByAuthor")
+
+  @@index([deletedAt])
+}
+
+// ===========================================
+// Guides
+// ===========================================
+
+model Guide {
+  id              String  @id @default(cuid())
+  slug            String  @unique
+  title           String
+  metaTitle       String?
+  metaDescription String
+  excerpt         String  @db.Text
+  heroPromise     Json?
+  h1Variants      Json?
+  targetKeyword   String?
+
+  type            GuideType
+  difficulty      GuideDifficulty          @default(intermediate)
+  content         String                   @db.Text
+  contentHtml     String?                  @db.Text
+  contentTsv      Unsupported("tsvector")?
+  rendererVersion Int                      @default(1)
+
+  pillarId String?
+  pillar   Guide?  @relation("PillarCluster", fields: [pillarId], references: [id], onDelete: SetNull)
+  clusters Guide[] @relation("PillarCluster")
+
+  topics       GuideTopic[]
+  authorId     String
+  author       Author       @relation("GuidesByAuthor", fields: [authorId], references: [id])
+  reviewedById String?
+  reviewedBy   Author?      @relation("GuidesByReviewer", fields: [reviewedById], references: [id])
+
+  seriesId    String?
+  series      GuideSeries? @relation(fields: [seriesId], references: [id])
+  seriesOrder Int?
+
+  prerequisites   GuidePrerequisite[]   @relation("RequiredFor")
+  requiredFor     GuidePrerequisite[]   @relation("Prerequisite")
+  conceptMentions GuideConceptMention[]
+  requiredTools   Json?
+
+  primaryCta Json?
+  ogImage    String?
+
+  // Hero illustration (optional AI-generated 1600×900 WebP). Distinct from
+  // ogImage (the typographic @vercel/og 1200×630 social-share preview).
+  heroImage         String?
+  heroImageAlt      String?
+  heroImageWidth    Int?
+  heroImageHeight   Int?
+  alternativeImages Json? // [{ url, width, height, score, reasons }]
+  illustrationMeta  Json? // { model, prompt, stylePreset, generatedAt, ... }
+
+  readingMinutes Int         @default(0)
+  wordCount      Int         @default(0)
+  status         GuideStatus @default(draft)
+
+  isPinned           Boolean   @default(false)
+  scheduledPublishAt DateTime?
+  publishedAt        DateTime?
+  lastReviewedAt     DateTime?
+  changelogEntries   Json?
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  revisions   GuideRevision[]
+  slugHistory GuideSlugHistory[]
+  bookmarks   GuideBookmark[]
+  stats       GuideStats?
+  feedback    GuideFeedback[]
+  h1Stats     GuideH1Stats[]
+  brokenLinks GuideBrokenLink[]
+
+  @@index([status, publishedAt])
+  @@index([pillarId])
+  @@index([authorId])
+  @@index([seriesId, seriesOrder])
+  @@index([scheduledPublishAt])
+  @@index([deletedAt])
+}
+
+model GuideRevision {
+  id        String   @id @default(cuid())
+  guideId   String
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  title     String
+  authorId  String
+  createdAt DateTime @default(now())
+
+  @@index([guideId, createdAt])
+}
+
+model GuideSlugHistory {
+  id        String   @id @default(cuid())
+  guideId   String
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  oldSlug   String   @unique
+  changedAt DateTime @default(now())
+
+  @@index([guideId])
+}
+
+model GuideBookmark {
+  id        String   @id @default(cuid())
+  // Reader id supplied by the auth adapter (no FK — readers are app-defined).
+  userId    String
+  guideId   String
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, guideId])
+  @@index([userId])
+}
+
+model GuideStats {
+  guideId         String   @id
+  guide           Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  viewsCount      Int      @default(0)
+  bookmarksCount  Int      @default(0)
+  appliedCount    Int      @default(0)
+  shareCount      Int      @default(0)
+  copyPromptCount Int      @default(0)
+  ctaClickCount   Int      @default(0)
+  pogoStickCount  Int      @default(0)
+  updatedAt       DateTime @updatedAt
+}
+
+model GuideFeedback {
+  id        String   @id @default(cuid())
+  guideId   String
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  helpful   Boolean
+  comment   String?  @db.Text
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@index([guideId])
+}
+
+model GuideH1Stats {
+  id           String   @id @default(cuid())
+  guideId      String
+  guide        Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  variantIndex Int
+  showns       Int      @default(0)
+  converted    Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  @@unique([guideId, variantIndex])
+  @@index([guideId])
+}
+
+model GuideBrokenLink {
+  id            String   @id @default(cuid())
+  guideId       String
+  guide         Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  url           String
+  statusCode    Int?
+  errorMessage  String?
+  lastCheckedAt DateTime @default(now())
+
+  @@unique([guideId, url])
+  @@index([guideId])
+}
+
+model GuidePrerequisite {
+  id             String @id @default(cuid())
+  guideId        String
+  prerequisiteId String
+  guide          Guide  @relation("RequiredFor", fields: [guideId], references: [id], onDelete: Cascade)
+  prerequisite   Guide  @relation("Prerequisite", fields: [prerequisiteId], references: [id], onDelete: Cascade)
+
+  @@unique([guideId, prerequisiteId])
+}
+
+model GuideSeries {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  guides      Guide[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ===========================================
+// Concepts (glossary)
+// ===========================================
+
+model Concept {
+  id              String  @id @default(cuid())
+  slug            String  @unique
+  term            String
+  shortDefinition String
+  longExplanation String? @db.Text
+  metaTitle       String?
+  metaDescription String?
+  ogImage         String?
+
+  topics   ConceptTopic[]
+  authorId String?
+  author   Author?        @relation("ConceptsByAuthor", fields: [authorId], references: [id])
+
+  relatedConcepts Concept[]             @relation("ConceptRelations")
+  relatedTo       Concept[]             @relation("ConceptRelations")
+  guides          GuideConceptMention[]
+
+  status             GuideStatus @default(draft)
+  scheduledPublishAt DateTime?
+  publishedAt        DateTime?
+  lastReviewedAt     DateTime?
+  deletedAt          DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  slugHistory ConceptSlugHistory[]
+
+  @@index([status, publishedAt])
+  @@index([scheduledPublishAt])
+}
+
+model ConceptSlugHistory {
+  id        String   @id @default(cuid())
+  conceptId String
+  concept   Concept  @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  oldSlug   String   @unique
+  changedAt DateTime @default(now())
+}
+
+model GuideConceptMention {
+  guideId   String
+  conceptId String
+  guide     Guide   @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  concept   Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@id([guideId, conceptId])
+}
+
+// ===========================================
+// Taxonomy
+// ===========================================
+
+model Topic {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  title       String
+  description String?
+  guides      GuideTopic[]
+  concepts    ConceptTopic[]
+  createdAt   DateTime       @default(now())
+}
+
+model GuideTopic {
+  guideId String
+  topicId String
+  guide   Guide  @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([guideId, topicId])
+}
+
+model ConceptTopic {
+  conceptId String
+  topicId   String
+  concept   Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  topic     Topic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@id([conceptId, topicId])
+}
+
+// ===========================================
+// Digest newsletter (self-owned subscribers — no host-platform consent stack)
+// ===========================================
+
+model DigestSubscriber {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  frequency        String    @default("weekly") // daily | weekly
+  source           String?
+  confirmedAt      DateTime?
+  unsubscribeToken String    @unique @default(cuid())
+  lastDailySentAt  DateTime?
+  lastWeeklySentAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([frequency])
+}
+
+/// A generated digest issue (for admin approval + cron idempotency).
+/// periodKey: daily → 'YYYY-MM-DD', weekly → 'YYYY-Www'.
+model GuideDigestIssue {
+  id        String @id @default(cuid())
+  period    String // 'daily' | 'weekly'
+  periodKey String @map("period_key")
+
+  status String @default("draft") // draft | approved | sent | skipped
+
+  guideIds      String[] @map("guide_ids")
+  bodyTelegram  String?  @map("body_telegram") @db.Text
+  bodyEmailHtml String?  @map("body_email_html") @db.Text
+  subject       String?
+
+  recipientCount Int @default(0) @map("recipient_count")
+  sentCount      Int @default(0) @map("sent_count")
+  failedCount    Int @default(0) @map("failed_count")
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  approvedAt DateTime? @map("approved_at")
+  sentAt     DateTime? @map("sent_at")
+
+  @@unique([period, periodKey])
+  @@index([status])
+  @@map("guide_digest_issues")
+}

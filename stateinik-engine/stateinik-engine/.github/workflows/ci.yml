@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: stateinik
+          POSTGRES_PASSWORD: stateinik
+          POSTGRES_DB: stateinik
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U stateinik"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql://stateinik:stateinik@localhost:5432/stateinik
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      AUTH_SECRET: ci-secret-ci-secret-ci-secret-32x
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin
+      FTS_LANGUAGE: english
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Prisma validate
+        run: npx prisma validate
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Seed
+        run: npm run seed
+
+      - name: Build
+        run: npm run build

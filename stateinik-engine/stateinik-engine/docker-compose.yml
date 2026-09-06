@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: stateinik
+      POSTGRES_PASSWORD: stateinik
+      POSTGRES_DB: stateinik
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stateinik"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      target: runner
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://stateinik:stateinik@db:5432/stateinik
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      AUTH_SECRET: change-me-to-a-long-random-string-min-32-chars
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin
+      FTS_LANGUAGE: english
+    ports:
+      - "3000:3000"
+    # Apply migrations on boot, then start the standalone server. Invoke the
+    # Prisma CLI by its real path (not the .bin symlink) so it resolves its
+    # schema WASM correctly from the slim runner node_modules.
+    command: sh -c "node node_modules/prisma/build/index.js migrate deploy && node server.js"
+
+  # One-shot demo seed. Uses the builder image (it has tsx + dev deps).
+  #   docker compose --profile seed run --rm seed
+  seed:
+    profiles: ["seed"]
+    build:
+      context: .
+      target: builder
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://stateinik:stateinik@db:5432/stateinik
+    command: sh -c "npx prisma migrate deploy && npx tsx scripts/seed.ts"
+
+volumes:
+  pgdata:

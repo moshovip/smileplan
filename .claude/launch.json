@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "smileplan-web",
+      "runtimeExecutable": "C:\\Users\\Armen\\Projects\\smileplan\\node\\node-v20.18.0-win-x64\\npm.cmd",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "C:\\Users\\Armen\\Projects\\smileplan\\web",
+      "port": 5173
+    }
+  ]
+}

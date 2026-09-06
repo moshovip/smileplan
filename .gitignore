@@ -1,0 +1,17 @@
+# зависимости - на любом уровне вложенности
+node_modules/
+node/
+# портативные бинарники и архивы
+node-portable.zip
+ngrok/
+ngrok.zip
+cloudflared.exe
+cred_in.txt
+*.zip
+# dist/ - отдельный git-репозиторий для GitHub Pages
+dist/
+web/dist/
+graphify-out/
+# секреты
+.env
+.env.*

@@ -1,0 +1,58 @@
+{
+  "name": "stateinik",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
+  "description": "Stateinik — an open-source MDX article engine: a production-grade blog/guides CMS with revisions, SEO, full-text search, analytics and A/B testing. Clone and deploy on your own site.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx scripts/seed.ts",
+    "dev:seed": "prisma migrate deploy && tsx scripts/seed.ts",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx scripts/seed.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@prisma/client": "5.22.0",
+    "@vercel/og": "^0.11.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "ioredis": "^5.10.1",
+    "jose": "^6.2.2",
+    "lucide-react": "^1.7.0",
+    "mermaid": "^11.15.0",
+    "next": "^14.2.35",
+    "next-mdx-remote": "^6.0.0",
+    "prisma": "5.22.0",
+    "rate-limiter-flexible": "^10.0.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "sanitize-html": "^2.17.2",
+    "sharp": "^0.34.5",
+    "shiki": "^4.0.2",
+    "tailwind-merge": "^3.5.0",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/mdx": "^2.0.13",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/sanitize-html": "^2.16.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------------------------------------------------------------------------
+   Theme tokens. The default is a warm dark theme; override these to re-skin.
+   The matching Tailwind utility names live in tailwind.config.ts.
+--------------------------------------------------------------------------- */
+:root {
+  --color-bg: #141413;
+  --color-bg-card: #1b1a19;
+  --color-border: #282624;
+  --color-text: #ede9e3;
+  --color-text-sub: #a8a29e;
+  --color-accent: #d97757;
+}
+
+/* Hide scrollbars on horizontal snap carousels while keeping touch-swipe. */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Subtle film-grain overlay. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+::selection {
+  background: rgba(217, 119, 87, 0.3);
+  color: #fff;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: #2e2c28; border-radius: 3px; }
+
+.font-head {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.warm-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(217,119,87,0.12) 30%, rgba(217,119,87,0.12) 70%, transparent);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  /* Collapsible <details> blocks (used by FAQ and MDX fold sections). */
+  details {
+    background: rgba(26, 26, 25, 0.5);
+    border: 1px solid rgba(42, 40, 38, 0.5);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  details:hover {
+    border-color: rgba(217, 119, 87, 0.2);
+    background: rgba(26, 26, 25, 0.7);
+  }
+  details[open] {
+    border-color: rgba(217, 119, 87, 0.15);
+  }
+  summary {
+    cursor: pointer;
+    padding: 14px 16px;
+    user-select: none;
+    list-style: none;
+    position: relative;
+    transition: background 0.2s ease;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--color-accent);
+    transition: transform 0.2s ease;
+  }
+  details[open] > summary::before {
+    transform: translateY(-50%) rotate(90deg);
+  }
+  summary:hover { background: rgba(217, 119, 87, 0.05); }
+  summary strong { color: var(--color-text); font-weight: 600; }
+  details > div {
+    padding: 0 16px 16px 36px;
+    animation: slideDown 0.3s ease-out;
+  }
+  details > div > p:first-child,
+  details > div > h4:first-child { margin-top: 0; }
+  details > div > p:last-child { margin-bottom: 0; }
+  details code {
+    background: rgba(217, 119, 87, 0.1);
+    color: var(--color-accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  details pre {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(42, 40, 38, 0.5);
+    border-radius: 8px;
+    padding: 12px;
+    overflow-x: auto;
+    margin: 8px 0;
+  }
+  details pre code { background: none; color: var(--color-text); padding: 0; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
