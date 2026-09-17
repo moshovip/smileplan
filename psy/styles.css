@@ -1,0 +1,230 @@
+:root {
+  --bg: #f7f6f3;
+  --panel: #ffffff;
+  --ink: #1d1c1a;
+  --ink-soft: #5d5a54;
+  --ink-faint: #8a867e;
+  --line: #e2ded6;
+  --accent: #6b4f2a;
+  --accent-soft: #f0e7d8;
+  --ok: #3f6d4e;
+  --warn: #9a6b1f;
+  --radius: 10px;
+  --maxw: 760px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171614;
+    --panel: #201e1b;
+    --ink: #ece9e3;
+    --ink-soft: #b3aea4;
+    --ink-faint: #837e75;
+    --line: #322f2a;
+    --accent: #d8b384;
+    --accent-soft: #2c2620;
+    --ok: #7fb593;
+    --warn: #d6a659;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.62 Georgia, "Iowan Old Style", "Times New Roman", serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+button, input, textarea, select { font-family: inherit; font-size: inherit; color: inherit; }
+
+/* --- Шапка --- */
+.top {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.top-in {
+  max-width: 1100px; margin: 0 auto;
+  padding: 12px 16px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+}
+.brand-name { font-weight: 700; letter-spacing: .01em; }
+.brand-sub {
+  display: block;
+  font-size: 13px; color: var(--ink-faint);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.progress {
+  font: 500 13px/1.4 system-ui, -apple-system, sans-serif;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* --- Сетка --- */
+.layout {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 250px minmax(0, 1fr);
+  gap: 28px;
+  padding: 24px 16px 8px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 16px; padding-top: 16px; }
+}
+
+/* --- Оглавление --- */
+.side {
+  position: sticky; top: 74px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  max-height: calc(100vh - 96px); overflow-y: auto;
+}
+@media (max-width: 860px) {
+  .side { position: static; max-height: none; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); padding: 8px 12px; }
+}
+.side h2 {
+  font: 600 11px/1.3 system-ui, sans-serif;
+  text-transform: uppercase; letter-spacing: .09em;
+  color: var(--ink-faint);
+  margin: 18px 0 6px;
+}
+.side h2:first-child { margin-top: 0; }
+.side a {
+  display: flex; align-items: baseline; gap: 7px;
+  padding: 5px 8px; margin: 0 -8px;
+  border-radius: 6px;
+  color: var(--ink-soft); text-decoration: none;
+}
+.side a:hover { background: var(--accent-soft); color: var(--ink); }
+.side a.is-active { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.side a.is-stub { color: var(--ink-faint); }
+.dot { flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%; background: var(--line); margin-top: 6px; }
+.dot.started { background: var(--warn); }
+.dot.done { background: var(--ok); }
+
+/* --- Юнит --- */
+.main { min-width: 0; max-width: var(--maxw); }
+
+.unit-head { margin-bottom: 22px; }
+.eyebrow {
+  font: 600 11px/1.3 system-ui, sans-serif;
+  text-transform: uppercase; letter-spacing: .09em;
+  color: var(--ink-faint);
+  margin: 0 0 6px;
+}
+h1 { font-size: 27px; line-height: 1.25; margin: 0 0 10px; font-weight: 700; }
+@media (max-width: 480px) { h1 { font-size: 23px; } }
+
+.meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-family: system-ui, sans-serif; font-size: 13px; }
+.tag {
+  display: inline-block; padding: 2px 9px; border-radius: 99px;
+  border: 1px solid var(--line); color: var(--ink-soft); background: var(--panel);
+}
+.tag.draft { border-color: var(--warn); color: var(--warn); }
+.tag.verified { border-color: var(--ok); color: var(--ok); }
+.meta a { color: var(--accent); }
+
+section.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin: 0 0 16px;
+}
+@media (max-width: 480px) { section.card { padding: 16px 14px; } }
+
+section.card > h3 {
+  font: 600 12px/1.3 system-ui, sans-serif;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--ink-faint);
+  margin: 0 0 12px;
+}
+.card p { margin: 0 0 10px; }
+.card p:last-child { margin-bottom: 0; }
+.card ul { margin: 0 0 10px; padding-left: 20px; }
+.card li { margin-bottom: 7px; }
+
+.confuse { list-style: none; padding: 0; margin: 0; }
+.confuse li { margin-bottom: 12px; }
+.confuse li:last-child { margin-bottom: 0; }
+.confuse .wrong { color: var(--ink-soft); }
+.confuse .wrong::before { content: "✗ "; color: var(--warn); font-weight: 700; }
+.confuse .right::before { content: "→ "; color: var(--ok); font-weight: 700; }
+
+/* --- Упражнения --- */
+.ex { margin: 0 0 20px; }
+.ex:last-child { margin-bottom: 0; }
+.ex-q { font-weight: 600; margin: 0 0 4px; }
+.ex-hint { font: 13px/1.5 system-ui, sans-serif; color: var(--ink-faint); margin: 0 0 8px; }
+textarea {
+  width: 100%; min-height: 96px; resize: vertical;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px;
+  line-height: 1.55;
+}
+textarea:focus, .choice input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.choice { display: flex; flex-wrap: wrap; gap: 8px; font-family: system-ui, sans-serif; font-size: 14px; }
+.choice label {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 13px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 99px;
+  cursor: pointer;
+}
+.choice label:hover { border-color: var(--accent); }
+.choice input { accent-color: var(--accent); margin: 0; }
+
+.scale { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: system-ui, sans-serif; font-size: 14px; }
+.scale .scale-end { color: var(--ink-faint); font-size: 13px; }
+.scale label {
+  width: 38px; height: 38px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 8px; cursor: pointer;
+}
+.scale label:hover { border-color: var(--accent); }
+.scale input { position: absolute; opacity: 0; width: 0; height: 0; }
+.scale input:checked + span,
+.scale label:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); font-weight: 700; }
+
+.saved { font: 12px/1 system-ui, sans-serif; color: var(--ok); opacity: 0; transition: opacity .25s; }
+.saved.show { opacity: 1; }
+
+/* --- Итог --- */
+.verdict { display: flex; flex-wrap: wrap; gap: 8px; font-family: system-ui, sans-serif; font-size: 14px; }
+.verdict label {
+  padding: 7px 14px; border-radius: 99px; cursor: pointer;
+  background: var(--bg); border: 1px solid var(--line);
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.verdict label:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); font-weight: 600; }
+.verdict input { accent-color: var(--accent); margin: 0; }
+
+.stub { color: var(--ink-soft); }
+.stub ul { margin-top: 8px; }
+
+.terms { font-family: system-ui, sans-serif; font-size: 14px; }
+.terms dt { font-weight: 600; margin-top: 10px; }
+.terms dt:first-child { margin-top: 0; }
+.terms dd { margin: 2px 0 0; color: var(--ink-soft); }
+
+.unit-nav { display: flex; justify-content: space-between; gap: 12px; margin: 22px 0 8px; font-family: system-ui, sans-serif; font-size: 14px; }
+.unit-nav a { color: var(--accent); text-decoration: none; }
+.unit-nav a:hover { text-decoration: underline; }
+
+/* --- Подвал --- */
+.foot { border-top: 1px solid var(--line); margin-top: 32px; background: var(--panel); }
+.foot-in { max-width: 1100px; margin: 0 auto; padding: 18px 16px 28px; }
+.foot-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.foot button {
+  padding: 8px 15px; border-radius: 8px; cursor: pointer;
+  background: var(--bg); border: 1px solid var(--line);
+  font: 500 14px/1.2 system-ui, sans-serif; color: var(--ink-soft);
+}
+.foot button:hover { border-color: var(--accent); color: var(--ink); }
+.foot-note { font: 13px/1.55 system-ui, sans-serif; color: var(--ink-faint); margin: 0; max-width: 62ch; }

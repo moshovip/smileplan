@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Old School психология — рабочая тетрадь</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="brand-name">Рабочая тетрадь</span>
+      <span class="brand-sub">Old School психология · курс В.В. Петухова</span>
+    </div>
+    <div class="progress" id="progress" aria-live="polite"></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="side" id="nav" aria-label="Оглавление"></nav>
+
+  <main class="main" id="main"></main>
+</div>
+
+<footer class="foot">
+  <div class="foot-in">
+    <div class="foot-actions">
+      <button type="button" data-act="export-md">Выгрузить в Markdown</button>
+      <button type="button" data-act="export-json">Сохранить копию (JSON)</button>
+      <button type="button" data-act="import-json">Загрузить копию</button>
+      <input type="file" id="import-file" accept="application/json" hidden>
+    </div>
+    <p class="foot-note">
+      Ответы хранятся только в этом браузере (localStorage). Никуда не отправляются.
+      Тетрадь учебная: она помогает разобрать себя понятиями курса, а не поставить диагноз.
+    </p>
+  </div>
+</footer>
+
+<script src="content/units.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
