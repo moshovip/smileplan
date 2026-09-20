@@ -33,8 +33,9 @@
 
 ## С чего начать чтение
 
-1. `00-context/project-brief.md` — суть за пять минут
-2. `01-pilot/pilot-4-cabinets.md` — что делаем прямо сейчас
-3. `02-checklists/criteria.json` — по чему оценивается консультация
+1. `00-context/current-state.md` — где мы сейчас и что дальше
+2. `00-context/project-brief.md` — суть за пять минут
+3. `01-pilot/pilot-4-cabinets.md` — что делаем прямо сейчас
+4. `02-checklists/criteria.json` — по чему оценивается консультация
 
 Если вы ИИ-агент и подключились к этому репозиторию — сначала прочитайте `AGENTS.md`.
